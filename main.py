@@ -1,49 +1,48 @@
-# main.py
 import pygame
 import cv2
 import numpy as np
 from breaker import Paddle, Ball, Brick, create_bricks, show_main_screen, SCREEN_WIDTH, SCREEN_HEIGHT
 
-# Initialize pygame and create game objects
+# Inicializar pygame e criar objetos do jogo
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Breakout")
 
-# Fonts for displaying lives and game over
+# Fontes para exibir vidas e mensagem de fim de jogo
 small_font = pygame.font.Font(None, 36)
 
-# Create game objects
+# Criar objetos do jogo
 paddle = Paddle()
 ball = Ball()
 bricks = create_bricks()
 
-# OpenCV setup
+# Configuração do OpenCV
 cap = cv2.VideoCapture(0)
 lower_red1 = np.array([0, 120, 70], dtype=np.uint8)
 upper_red1 = np.array([10, 255, 255], dtype=np.uint8)
 lower_red2 = np.array([170, 120, 70], dtype=np.uint8)
 upper_red2 = np.array([180, 255, 255], dtype=np.uint8)
 
-# Game loop variables
+# Variáveis do ciclo do jogo
 running = True
 clock = pygame.time.Clock()
-lives = 2  # Starting lives
+lives = 2  # Vidas iniciais
 
-# Show main screen before starting the game
+# Exibir o ecrã principal antes de iniciar o jogo
 show_main_screen(screen)
 
 while running:
     screen.fill((0, 0, 0))
 
-    # Event handling
+    # Tratamento de eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Capture frame from webcam
+    # Capturar frame da webcam
     ret, frame = cap.read()
     if not ret:
-        print("Failed to capture video")
+        print("Falha ao capturar vídeo")
         break
 
     frame = cv2.flip(frame, 1)
@@ -53,8 +52,7 @@ while running:
     mask2 = cv2.inRange(hsv_frame, lower_red2, upper_red2)
     red_mask = cv2.bitwise_or(mask1, mask2)
 
-
- #Morphological operations
+    # Operações morfológicas
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
     red_mask = cv2.erode(red_mask, kernel, iterations=2)
     red_mask = cv2.dilate(red_mask, kernel, iterations=2)
@@ -72,40 +70,49 @@ while running:
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     cv2.imshow("Camera Feed", frame)
-    cv2.imshow("Red Object Mask", red_mask)
+    cv2.imshow("Máscara do Objeto Vermelho", red_mask)
 
-    # Ball movement
+    # Movimento da bola
     ball.move()
     if ball.rect.colliderect(paddle.rect):
         ball.bounce()
 
-    # Ball collision with bricks
+    # Colisão da bola com os tijolos
     for brick in bricks:
         if ball.rect.colliderect(brick.rect) and not brick.is_broken:
             brick.is_broken = True
             ball.bounce()
 
-    # Ball goes out of bounds
+    # Verificar condição de vitória (todos os tijolos quebrados)
+    if all(brick.is_broken for brick in bricks):
+        screen.fill((0, 0, 0))
+        win_text = small_font.render("Ganhaste!", True, (0, 255, 0))
+        screen.blit(win_text, (SCREEN_WIDTH // 2 - win_text.get_width() // 2, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.delay(2000)  # Exibir a mensagem "Ganhaste!" durante 2 segundos
+        running = False
+
+    # Bola sai do limite do ecrã
     if ball.rect.y > SCREEN_HEIGHT:
         lives -= 1
         if lives > 0:
-            ball = Ball()  # Reset ball position
+            ball = Ball()  # Repor a posição da bola
         else:
             screen.fill((0, 0, 0))
-            game_over_text = small_font.render("Game Over!", True, (255, 0, 0))
+            game_over_text = small_font.render("Fim do Jogo!", True, (255, 0, 0))
             screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, SCREEN_HEIGHT // 2))
             pygame.display.flip()
             pygame.time.delay(2000)
             running = False
 
-    # Draw everything
+    # Desenhar tudo
     paddle.draw(screen)
     ball.draw(screen)
     for brick in bricks:
         brick.draw(screen)
 
-    # Display lives count
-    lives_text = small_font.render(f"Lives: {lives}", True, (255, 255, 255))
+    # Exibir contagem de vidas
+    lives_text = small_font.render(f"Vidas: {lives}", True, (255, 255, 255))
     screen.blit(lives_text, (10, 10))
 
     pygame.display.flip()

@@ -2,7 +2,7 @@
 import pygame
 import random
 
-# Game dimensions and colors
+# Dimensões do jogo e cores
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 PADDLE_WIDTH = 100
@@ -14,7 +14,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
-# Initialize font (required for main menu)
+# Inicializar fonte (necessária para o menu principal)
 pygame.font.init()
 font = pygame.font.Font(None, 74)
 
@@ -58,7 +58,7 @@ class Brick:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, BRICK_WIDTH, BRICK_HEIGHT)
         self.is_broken = False
-        # Assign a random color to each brick
+        # Atribuir uma cor aleatória a cada tijolo
         self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
     def draw(self, screen):
@@ -70,7 +70,7 @@ def create_bricks():
 
 def show_main_screen(screen):
     screen.fill((0, 0, 0))
-    text = font.render("Press any key to start", True, WHITE)
+    text = font.render("Pressiona qualquer tecla para começar", True, WHITE)
     screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
     pygame.display.flip()
     waiting = True
