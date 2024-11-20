@@ -5,41 +5,41 @@ class PaddleControlYOLO:
     def __init__(self, screen_width):
         self.screen_width = screen_width
         self.cap = cv2.VideoCapture(0)
-        # Load the YOLOv5 model
-        self.model = YOLO("yolov5s.pt")  # Pre-trained YOLOv5 model
+        # Carrega o modelo YOLOv5
+        self.model = YOLO("yolov5s.pt")  # Modelo YOLOv5 pre-treinado
 
     def get_paddle_position(self):
         ret, frame = self.cap.read()
         if not ret:
-            print("Failed to capture video")
+            print("Falha ao capturar video")
             return None
 
-        # Flip the frame horizontally for better interaction
+        # Inverte o frame horizontalmente para melhor interacao
         frame = cv2.flip(frame, 1)
 
-        # Use YOLOv5 to detect objects in the frame
+        # Usa o YOLOv5 para detectar objetos no frame
         results = self.model.predict(source=frame, conf=0.5, show=False)
 
-        # Process the results
-        detections = results[0].boxes.data  # Access the bounding boxes directly
+        # Processa os resultados
+        detections = results[0].boxes.data  # Acessa as caixas delimitadoras diretamente
         for detection in detections:
             x_min, y_min, x_max, y_max, confidence, class_id = detection.tolist()
-            if int(class_id) == 67:  # Class ID 67 is 'cell phone' in the COCO dataset
-                # Draw bounding box on the frame
+            if int(class_id) == 67:  # ID da classe 67 é 'cell phone' no dataset COCO
+                # Desenha a caixa delimitadora no frame
                 cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 255, 0), 2)
 
-                # Calculate the center of the bounding box
+                # Calcula o centro da caixa delimitadora
                 object_center_x = int((x_min + x_max) / 2)
                 frame_width = frame.shape[1]
                 normalized_x = object_center_x / frame_width
                 paddle_x = int(normalized_x * self.screen_width)
 
-                # Show the annotated frame
+                # Exibe o frame anotado
                 cv2.imshow("Camera Feed with YOLO", frame)
 
                 return paddle_x
 
-        # If no cellphone is detected, just show the normal feed
+        # Se nenhum celular for detectado, apenas exibe o feed normal
         cv2.imshow("Camera Feed with YOLO", frame)
         return None
 
