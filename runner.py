@@ -1,8 +1,9 @@
 import pygame
 from breaker import Paddle, Ball, Brick, create_bricks, show_main_screen, SCREEN_WIDTH, SCREEN_HEIGHT
 from main import PaddleControl
+from part2 import PaddleControlYOLO
 
-def main():
+def main(use_yolo=False):  # Add a parameter to toggle between the two systems
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Breakout with CV")
@@ -13,7 +14,10 @@ def main():
     bricks = create_bricks()
 
     # Initialize computer vision
-    paddle_control = PaddleControl(SCREEN_WIDTH)
+    if use_yolo:
+        paddle_control = PaddleControlYOLO(SCREEN_WIDTH)
+    else:
+        paddle_control = PaddleControl(SCREEN_WIDTH)
 
     # Game variables
     running = True
@@ -85,4 +89,5 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    # Set `use_yolo=True` to use YOLOv5-based detection instead of HSV-based segmentation
+    main(use_yolo=True)
