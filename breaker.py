@@ -70,7 +70,7 @@ def create_bricks():
 
 def show_main_screen(screen):
     screen.fill((0, 0, 0))
-    text = font.render("Pressiona qualquer tecla para começar", True, WHITE)
+    text = font.render("Press any key to start", True, WHITE)
     screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
     pygame.display.flip()
     waiting = True
