@@ -1,8 +1,24 @@
 # Índice
 
 
-1. [Jogo](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#jogo-breakerpy)
-   1.1 [Jogo](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#jogo-breakerpy)
+1. [ Jogo ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#jogo-breakerpy)  
+   1.1 [ Importações e Configurações Iniciais ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#importa%C3%A7%C3%B5es-e-configura%C3%A7%C3%B5es-iniciais)  
+   1.2 [ Constantes do Jogo ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#constantes-do-jogo)  
+   1.3 [ Classes Dos Objetos do Jogo ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#classes-dos-objetos-do-jogo)  
+        1.3.1 [ Paddle ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#paddle)  
+           1.3.2 [ Ball ](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#paddle)  
+           1.3.3 [ Brick ]([https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#paddle](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#brick))
+   1.4
+
+
+   1.5
+   1.6
+   1.7
+
+
+
+
+   
 3. [Fase 1](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#1%C2%AA-fase-algoritmos-de-segmenta%C3%A7%C3%A3o)
 4. [Fase 2](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#2%C2%AA-fase-algoritmos-de-detec%C3%A7%C3%A3o-de-objectos)
 5. [Fase 3](https://github.com/joaocostaIpca/brickgame/tree/master?tab=readme-ov-file#3%C2%AA-fase-algoritmos-de-tracking-ou-detec%C3%A7%C3%A3o-de-movimento)
