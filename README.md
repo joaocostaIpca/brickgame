@@ -1,26 +1,32 @@
 # Índice
 
 
-1. [Jogo](#markdown-header-Jogo (breaker.py))
-2. [Fase 1](#PrimeiraFase)
-3. [Fase 2](#SegundaFase)
-4. [Fase 3](#TerceiraFase)
-5. [Executável](#Executavel)
+1. [Jogo](https://github.com/joaocostaIpca/brickgame/edit/master/README.md#jogo-breakerpy)
+2. [Fase 1](https://github.com/joaocostaIpca/brickgame/edit/master/README.md#1%C2%AA-fase-algoritmos-de-segmenta%C3%A7%C3%A3o)
+3. [Fase 2](https://github.com/joaocostaIpca/brickgame/edit/master/README.md#2%C2%AA-fase-algoritmos-de-detec%C3%A7%C3%A3o-de-objectos)
+4. [Fase 3](https://github.com/joaocostaIpca/brickgame/edit/master/README.md#3%C2%AA-fase-algoritmos-de-tracking-ou-detec%C3%A7%C3%A3o-de-movimento)
+5. [Extras](https://github.com/joaocostaIpca/brickgame/edit/master/README.md#extras)
 
 
 # Jogo (breaker.py)
 
-Esta secção é exclusivaente reservada para as configurações e controles do Jogo em Python
- ## Definição das dimensões do ecrã e as cores do jogo:
- ```python
-  SCREEN_WIDTH = 800
-  SCREEN_HEIGHT = 600
-  PADDLE_WIDTH = 100
-  BALL_RADIUS = 10
-  RED = (255, 0, 0)
-  BLUE = (0, 0, 255)
-  ```
 
+
+
+# 1ª Fase Algoritmos de Segmentação
+
+
+
+# 2ª Fase Algoritmos de Detecção de Objectos
+
+
+
+# 3ª Fase Algoritmos de Tracking ou Detecção de Movimento
+
+
+
+
+# Extras
 
 
 
