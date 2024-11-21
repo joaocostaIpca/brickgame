@@ -1,8 +1,14 @@
 # Índice
-Neste trabalho pretende-se ...
 
 
-# breaker.py
+1. [Jogo](#markdown-header-Jogo (breaker.py))
+2. [Fase 1](#PrimeiraFase)
+3. [Fase 2](#SegundaFase)
+4. [Fase 3](#TerceiraFase)
+5. [Executável](#Executavel)
+
+
+# Jogo (breaker.py)
 
 Esta secção é exclusivaente reservada para as configurações e controles do Jogo em Python
  ## Definição das dimensões do ecrã e as cores do jogo:
