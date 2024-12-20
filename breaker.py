@@ -1,6 +1,6 @@
 import pygame
 import random
-from main import PaddleControl  # ou de part2 import PaddleControlYOLO
+from part1 import PaddleControl  # ou de part2 import PaddleControlYOLO
 from part2 import PaddleControlYOLO  # Garanta que isto está incluído se usar YOLO
 
 # Constantes do jogo
