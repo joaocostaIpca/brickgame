@@ -439,6 +439,107 @@ Mostra dois feeds:
 
 # 2ª Fase Algoritmos de Detecção de Objectos
 
+### Importações e Configurações Iniciais
+
+``` python
+from ultralytics import YOLO
+import cv2
+
+```
+
+Importa bibliotecas necessárias:
+
+- `from ultralytics import YOLO` a biblioteca `ultralytics` é importada, que contém o modelo `YOLO` (neste caso, YOLOv5), isto é uma rede neural de detecção de objetos.
+- `import cv2` A biblioteca OpenCV (cv2) é usada para captura de vídeo, processamento de imagens e exibição.
+
+
+### Definição da Classe PaddleControlYOLO
+``` python
+class PaddleControlYOLO:
+    def __init__(self, screen_width):
+        self.screen_width = screen_width
+        self.cap = cv2.VideoCapture(0)
+        self.model = YOLO("yolov5s.pt")
+
+
+```
+
+- class `PaddleControlYOLO`  tem como objetivo controlar a posição do paddle (provavelmente para um jogo tipo Pong ou controle de cursor) baseado na posição de um objeto detectado pela câmera.
+- `def __init__(self, screen_width)` Método construtor que é executado quando uma instância da classe é criada. Ele recebe `screen_width` como argumento, que define a largura da tela (usada para mapear a posição detectada para a largura da tela).
+- `self.screen_width = screen_width` Armazena o valor da largura da tela.
+- `self.cap = cv2.VideoCapture(0)` Inicia a captura de vídeo usando a câmera. O valor 0 indica a câmera padrão (geralmente a webcam).
+
+### Inicialização da Captura de Vídeo e Modelo YOLOv5
+
+``` python
+def get_paddle_position(self):
+    ret, frame = self.cap.read()
+    if not ret:
+        print("Falha ao capturar video")
+        return None
+
+
+```
+- `def get_paddle_position(self)` isto captura o vídeo em tempo real e usa o modelo YOLO para detectar um objeto na imagem e calcular a posição do "paddle".
+- `ret, frame = self.cap.read()` Captura um frame da câmera `ret` é um valor booleano que indica se a captura foi bem-sucedida, e o `frame` contém a imagem capturada e assim se não for possivel a captura de uma imagem será retornado um erro.
+
+### Inversão da Câmara
+
+``` python
+frame = cv2.flip(frame, 1)
+```
+   - Isto inverte o frame horizontalmente para que a interação com a câmera seja mais intuitiva, como se fosse um espelho.
+
+### Yolo
+
+``` python
+results = self.model.predict(source=frame, conf=0.5, show=False)
+
+```
+- Usa o modelo YOLOv5 para fazer a predição de objetos no frame. O parâmetro `conf=0.5` define a confiança mínima (50%) para considerar uma detecção como válida. O `show=False` evita que a imagem seja exibida automaticamente pela função.
+>Nota:
+> Dado que está a ser usado o [ YoloV5 ](https://github.com/ultralytics/yolov5) para a realização deste projeto será possível encontrar alguma latência na execução do código do mesmo, devido a extensa biblioteca de detecção de objetos.
+
+### Detecção do Telemóvel e Cálculo da Posição do Paddle no Frame de Vídeo
+
+``` python
+detections = results[0].boxes.data
+for detection in detections:
+    x_min, y_min, x_max, y_max, confidence, class_id = detection.tolist()
+    if int(class_id) == 67:
+        cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 255, 0), 2)
+
+object_center_x = int((x_min + x_max) / 2)
+frame_width = frame.shape[1]
+normalized_x = object_center_x / frame_width
+paddle_x = int(normalized_x * self.screen_width)
+
+
+```
+### Os seguintes passos serão realizados:
+1.  Obtém os dados das caixas delimitadoras dos objetos detectados no primeiro (e único) frame.
+2.  Itera sobre as detecções. Cada detecção contém coordenadas da caixa delimitadora, a confiança da predição e o ID da classe do objeto.
+3.  Extrai as coordenadas (x_min, y_min, x_max, y_max) da caixa delimitadora e outros dados como a confiança e o ID da classe.
+4.  Verifica se o ID da classe é 67, que corresponde a "cell phone" (telemóvel) no dataset COCO usado pelo modelo YOLO.
+5.  Se um telefone for detectado, desenha um retângulo verde ao redor da caixa delimitadora no frame.
+6.  Calcula a coordenada X do centro do objeto detectado (telemóvel).
+7.  Obtém a largura do frame (imagem).
+8.  Normaliza a posição X do centro do objeto para o intervalo [0, 1], onde 0 é a borda esquerda e 1 é a borda direita.
+9.  Mapeia a posição normalizada para a largura da tela, obtendo a posição X do paddle.
+
+
+### Desenho da caixa delimitadora
+``` python
+cv2.imshow("Camera Feed with YOLO", frame)
+return paddle_x
+
+cv2.imshow("Camera Feed with YOLO", frame)
+return None
+
+
+```
+- se não for detectado um telemóvel será retornado um valor nulo 
+
 
 
 # 3ª Fase Algoritmos de Tracking ou Detecção de Movimento
