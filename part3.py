@@ -1,66 +1,97 @@
-from ultralytics import YOLO
 import cv2
-from bytetrack import BYTETracker, STrack
+import numpy as np
 
-
-class PaddleControlByteTrack:
+class PaddleControlMeanShift:
     def __init__(self, screen_width):
         self.screen_width = screen_width
         self.cap = cv2.VideoCapture(0)
 
-        # Carrega o modelo YOLO para detecção de objetos
-        self.model = YOLO("yolov5s.pt")  # Modelo YOLOv5 pre-treinado
+        # Variáveis para rastreamento
+        self.track_window = None
+        self.roi_hist = None
 
-        # Inicializa o ByteTrack
-        self.tracker = BYTETracker(frame_rate=30)  # Configuração do ByteTrack com taxa de quadros padrão
+        # Inicializa o rastreamento
+        self.initialize_tracker()
 
-    def get_paddle_position(self):
+    def initialize_tracker(self):
+        """Permite ao usuário selecionar manualmente a área contendo a cor vermelha para rastrear com MeanShift."""
         ret, frame = self.cap.read()
         if not ret:
-            print("Falha ao capturar video")
-            return None
+            print("Falha ao capturar o vídeo durante a inicialização")
+            return
 
-        # Inverte o frame horizontalmente para melhor interação
+        # Inverte o frame horizontalmente
         frame = cv2.flip(frame, 1)
 
-        # Usa o YOLOv5 para detectar objetos no frame
-        results = self.model.predict(source=frame, conf=0.5, show=False)
+        # Permitir ao usuário selecionar a região que contém o objeto vermelho
+        roi = cv2.selectROI("Selecione a região do objeto vermelho", frame, fromCenter=False, showCrosshair=True)
+        cv2.destroyWindow("Selecione a região do objeto vermelho")
 
-        # Processa os resultados de detecção
-        detections = []
-        for detection in results[0].boxes.data:
-            x_min, y_min, x_max, y_max, confidence, class_id = detection.tolist()
-            if int(class_id) == 67:  # Classe 67 é 'cell phone' no dataset COCO
-                detections.append([x_min, y_min, x_max, y_max, confidence])
+        if roi != (0, 0, 0, 0):  # Verifica se uma área foi selecionada
+            # Captura a região selecionada
+            x, y, w, h = roi
+            self.track_window = (x, y, w, h)
+            roi_frame = frame[y:y + h, x:x + w]
 
-        # Converte as detecções para o formato esperado pelo ByteTrack
-        detections = [STrack([x_min, y_min, x_max, y_max, conf], 67) for x_min, y_min, x_max, y_max, conf in detections]
+            # Converte a ROI para o espaço de cor HSV
+            hsv_roi = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2HSV)
 
-        # Atualiza o ByteTrack com as detecções atuais
-        tracks = self.tracker.update(detections)
+            # Aqui selecionamos apenas a cor vermelha na região, sem média
+            lower_red1 = np.array([0, 120, 70])
+            upper_red1 = np.array([10, 255, 255])
+            lower_red2 = np.array([170, 120, 70])
+            upper_red2 = np.array([180, 255, 255])
 
-        for track in tracks:
-            if track.state == STrack.State.Tracked:  # Garante que o objeto está sendo rastreado
-                x_min, y_min, x_max, y_max = track.tlwh
+            # Criar máscaras para isolar a cor vermelha
+            mask1 = cv2.inRange(hsv_roi, lower_red1, upper_red1)
+            mask2 = cv2.inRange(hsv_roi, lower_red2, upper_red2)
+            mask = cv2.bitwise_or(mask1, mask2)
 
-                # Calcula o centro do objeto rastreado
-                object_center_x = int((x_min + x_max) / 2)
-                frame_width = frame.shape[1]
-                normalized_x = object_center_x / frame_width
-                paddle_x = int(normalized_x * self.screen_width)
+            # Aplica a máscara para extrair a cor vermelha
+            red_region = cv2.bitwise_and(roi_frame, roi_frame, mask=mask)
 
-                # Desenha a caixa delimitadora no frame
-                cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 255, 0), 2)
+            # Calcula o histograma da cor vermelha na ROI
+            self.roi_hist = cv2.calcHist([cv2.cvtColor(red_region, cv2.COLOR_BGR2HSV)], [0, 1], None, [180, 256], [0, 180, 0, 256])
+            cv2.normalize(self.roi_hist, self.roi_hist, 0, 255, cv2.NORM_MINMAX)
 
-                # Exibe o frame anotado
-                cv2.imshow("Camera Feed with ByteTrack", frame)
+        else:
+            print("Nenhuma área foi selecionada.")
+            return
 
-                return paddle_x
+    def get_paddle_position(self):
+        """Usa o MeanShift para rastrear a cor vermelha e retornar a posição normalizada da paddle."""
+        ret, frame = self.cap.read()
+        if not ret:
+            print("Falha ao capturar vídeo")
+            return None
 
-        # Se nenhum objeto for rastreado, apenas exibe o feed normal
-        cv2.imshow("Camera Feed with ByteTrack", frame)
-        return None
+        # Inverte o frame horizontalmente
+        frame = cv2.flip(frame, 1)
+
+        # Converte o frame para o espaço de cor HSV
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # Calcula a backprojection (projeção reversa) usando o histograma da cor vermelha
+        back_proj = cv2.calcBackProject([hsv_frame], [0, 1], self.roi_hist, [0, 180, 0, 256], 1)
+
+        # Aplica o algoritmo MeanShift
+        ret, self.track_window = cv2.meanShift(back_proj, self.track_window,
+                                               (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 50, 1))
+
+        # Desenha o retângulo ao redor da área rastreada
+        x, y, w, h = self.track_window
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # Calcula a posição da paddle com base no centro da região rastreada
+        frame_width = frame.shape[1]
+        normalized_x = (x + w / 2) / frame_width
+        paddle_x = int(normalized_x * self.screen_width)
+
+        # Exibe a posição da paddle
+        cv2.imshow("Camera Feed with Red Detection and MeanShift Tracking", frame)
+        return paddle_x
 
     def release(self):
+        """Libera recursos."""
         self.cap.release()
         cv2.destroyAllWindows()
