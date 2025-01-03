@@ -544,17 +544,101 @@ return None
 
 # 3ª Fase Algoritmos de Tracking ou Detecção de Movimento
 
+## Estrutura Geral
+O código define uma classe chamada PaddleControlMeanShift, que implementa um sistema de rastreamento de cor baseado no algoritmo MeanShift. Ele rastreia a posição de um objeto vermelho capturado pela câmera, calcula sua posição relativa na tela e a mapeia para uma largura virtual (representada por screen_width).
 
+### Importação de Bibliotecas
+``` python
+import cv2
+import numpy as np
 
+```
+* `cv2` Biblioteca OpenCV, usada para processamento de imagens e vídeo.
+* `numpy` Usado para manipulação de arrays, aqui aplicado para criar máscaras e manipular dados de cores.
 
-# Extras
+### Inicialização da Classe
+``` python
+class PaddleControlMeanShift:
+    def __init__(self, screen_width):
+        self.screen_width = screen_width
+        self.cap = cv2.VideoCapture(0)
+
+```
+* `screen_width` Define a largura virtual da tela onde a posição do paddle será mapeada.
+* `self.cap` Inicializa a captura de vídeo da câmera (índice 0 para a câmera padrão).
+
+### Inicialização do Rastreamento
+
+``` python
+def initialize_tracker(self):
+```
+Captura de um Quadro da Câmera:
+
+* `frame = cv2.flip(frame, 1)` inverte horizontalmente o quadro para facilitar a interação do usuário.
+
+Seleção da Região de Interesse (ROI):
+
+* O método `cv2.selectROI` permite ao usuário selecionar manualmente a região do objeto vermelho a ser rastreado.
+
+### Filtragem da Cor Vermelha na ROI
+Converte a ROI para o espaço de cores HSV:
+``` python
+hsv_roi = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2HSV)
+```
+Cria máscaras para duas faixas de tons vermelhos:
+``` python
+mask1 = cv2.inRange(hsv_roi, lower_red1, upper_red1)
+mask2 = cv2.inRange(hsv_roi, lower_red2, upper_red2)
+
+```
+
+### Criação do Histograma da Cor Vermelha:
+Extrai as características da cor vermelha e normaliza o histograma:
+``` python
+self.roi_hist = cv2.calcHist([...])
+cv2.normalize(self.roi_hist, self.roi_hist, 0, 255, cv2.NORM_MINMAX)
+
+```
+Isso cobre os dois intervalos do vermelho no espaço HSV (tons mais claros e mais escuros).
+
+## Rastreamento com MeanShift
+
+### Captura e Preprocessamento:
+* Captura um quadro da câmera e o inverte horizontalmente.
+* Converte o quadro para HSV:
+``` python
+hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+```
+
+### Captura e Preprocessamento:
+Calcula a probabilidade de cada pixel corresponder à cor vermelha, usando o histograma:
+``` python
+back_proj = cv2.calcBackProject([...])
+
+```
+### Aplicação do Algoritmo MeanShift:
+O `MeanShift` ajusta a posição da janela de rastreamento para maximizar a concentração da cor rastreada:
+``` python
+ret, self.track_window = cv2.meanShift(back_proj, self.track_window, criteria)
+```
+
+### Cálculo da Posição do Paddle:
+Obtém o centro da região rastreada e normaliza em relação à largura do quadro:
+``` python
+normalized_x = (x + w / 2) / frame_width
+paddle_x = int(normalized_x * self.screen_width)
+
+```
+
+### Nota
+>Neste codigo também foi utilizado um método de espaço de cor HSV pois possuíamos uma idea de como o fazer através de cores vermelhas e depois interpretar essas mesma cor e seguir-la através do Meanshift assim conseguiamos o centro da maior densidade de características, identificando o local mais provável de se encontrar um objeto com a cor vermelha, porém inserimos uma interface que seleciona a diferença entre duas cores para conseguir rastrear o movimento.
 
 
 
 # WebGrafia
 
-https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html
-https://cvexplained.wordpress.com/2020/04/28/color-detection-hsv/ 
+* https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html
+* https://cvexplained.wordpress.com/2020/04/28/color-detection-hsv/ 
 
 
 
